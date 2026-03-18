@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movie Recommender</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>🎬 Movie Recommender</h1>
+    <p class="subtitle">Pick your taste. Discover your next movie.</p>
+
+    <form method="POST" class="form">
+
+        <div class="filters">
+
+            <!-- GENRES -->
+            <div class="select-group">
+                <label>Genres</label>
+                <div class="select-wrapper">
+                    <select name="genres" multiple>
+                        {% for g in genres %}
+                        <option value="{{g}}">{{g}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- ACTORS -->
+            <div class="select-group">
+                <label>Actors</label>
+                <div class="select-wrapper">
+                    <select name="actors" multiple>
+                        {% for a in actors %}
+                        <option value="{{a}}">{{a}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- DIRECTORS -->
+            <div class="select-group">
+                <label>Directors</label>
+                <div class="select-wrapper">
+                    <select name="directors" multiple>
+                        {% for d in directors %}
+                        <option value="{{d}}">{{d}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+        </div>
+
+        <button type="submit">✨ Recommend Movies</button>
+
+    </form>
+
+    <!-- RESULTS -->
+    <div class="results">
+        {% for movie in recommendations %}
+        <div class="card">
+            <h3>{{movie.title}}</h3>
+            <p>{{ movie.genres | join(', ') }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,155 @@
+/* BASE */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: white;
+}
+
+/* CONTAINER */
+.container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+/* TITLE */
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    color: #94a3b8;
+    margin-bottom: 30px;
+}
+
+/* FORM */
+.form {
+    margin-bottom: 40px;
+}
+
+/* FILTER GRID */
+.filters {
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+/* SELECT GROUP */
+.select-group {
+    flex: 1;
+    min-width: 250px;
+    text-align: left;
+}
+
+.select-group label {
+    font-size: 14px;
+    margin-bottom: 8px;
+    display: block;
+    color: #cbd5f5;
+}
+
+/* GLASS EFFECT */
+.select-wrapper {
+    border-radius: 12px;
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    transition: 0.3s;
+}
+
+/* HOVER EFFECT */
+.select-wrapper:hover {
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+}
+
+/* SELECT BOX */
+select {
+    width: 100%;
+    height: 140px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    padding: 10px;
+    background: transparent;
+    color: white;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+/* OPTIONS */
+select option {
+    background: #1e293b;
+    color: white;
+    padding: 8px;
+}
+
+/* FOCUS ANIMATION */
+select:focus {
+    transform: scale(1.02);
+}
+
+/* SCROLLBAR */
+select::-webkit-scrollbar {
+    width: 6px;
+}
+
+select::-webkit-scrollbar-thumb {
+    background: #6366f1;
+    border-radius: 10px;
+}
+
+/* BUTTON */
+button {
+    margin-top: 25px;
+    background: linear-gradient(45deg, #6366f1, #8b5cf6);
+    border: none;
+    padding: 14px 28px;
+    border-radius: 30px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* BUTTON HOVER */
+button:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
+}
+
+/* RESULTS GRID */
+.results {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+/* CARD */
+.card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    transition: 0.4s;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeIn 0.6s forwards;
+}
+
+/* CARD HOVER */
+.card:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
