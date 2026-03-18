@@ -4,9 +4,7 @@ import ast
 
 app = Flask(__name__)
 
-# ---------------------------
-# LOAD DATA
-# ---------------------------
+
 def load_data():
     try:
         movies = pd.read_csv("tmdb_5000_movies.csv")
@@ -19,9 +17,7 @@ def load_data():
 
 df = load_data()
 
-# ---------------------------
-# PROCESS DATA
-# ---------------------------
+
 def extract_names(text):
     try:
         return [i['name'] for i in ast.literal_eval(text)]
@@ -38,9 +34,7 @@ df["genres"] = df["genres"].apply(extract_names)
 df["cast"] = df["cast"].apply(lambda x: extract_names(x)[:5])
 df["crew"] = df["crew"].apply(extract_director)
 
-# ---------------------------
-# RECOMMEND LOGIC
-# ---------------------------
+
 def recommend(genres, actors, directors, top_n=6):
 
     def score(row):
@@ -56,9 +50,7 @@ def recommend(genres, actors, directors, top_n=6):
 
     return results[["title", "genres"]].to_dict(orient="records")
 
-# ---------------------------
-# ROUTE
-# ---------------------------
+
 @app.route("/", methods=["GET", "POST"])
 def index():
 
@@ -83,8 +75,5 @@ def index():
         recommendations=recommendations
     )
 
-# ---------------------------
-# RUN
-# ---------------------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)

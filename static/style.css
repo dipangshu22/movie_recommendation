@@ -1,4 +1,4 @@
-/* BASE */
+
 body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
@@ -6,7 +6,7 @@ body {
     color: white;
 }
 
-/* CONTAINER */
+
 .container {
     max-width: 1100px;
     margin: auto;
@@ -14,7 +14,7 @@ body {
     text-align: center;
 }
 
-/* TITLE */
+
 h1 {
     font-size: 2.5rem;
     margin-bottom: 5px;
@@ -25,12 +25,12 @@ h1 {
     margin-bottom: 30px;
 }
 
-/* FORM */
+
 .form {
     margin-bottom: 40px;
 }
 
-/* FILTER GRID */
+
 .filters {
     display: flex;
     gap: 20px;
@@ -38,7 +38,7 @@ h1 {
     flex-wrap: wrap;
 }
 
-/* SELECT GROUP */
+
 .select-group {
     flex: 1;
     min-width: 250px;
@@ -52,7 +52,6 @@ h1 {
     color: #cbd5f5;
 }
 
-/* GLASS EFFECT */
 .select-wrapper {
     border-radius: 12px;
     padding: 6px;
@@ -61,12 +60,12 @@ h1 {
     transition: 0.3s;
 }
 
-/* HOVER EFFECT */
+
 .select-wrapper:hover {
     box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
 }
 
-/* SELECT BOX */
+
 select {
     width: 100%;
     height: 140px;
@@ -80,19 +79,18 @@ select {
     transition: 0.3s;
 }
 
-/* OPTIONS */
+
 select option {
     background: #1e293b;
     color: white;
     padding: 8px;
 }
 
-/* FOCUS ANIMATION */
 select:focus {
     transform: scale(1.02);
 }
 
-/* SCROLLBAR */
+
 select::-webkit-scrollbar {
     width: 6px;
 }
@@ -102,7 +100,7 @@ select::-webkit-scrollbar-thumb {
     border-radius: 10px;
 }
 
-/* BUTTON */
+
 button {
     margin-top: 25px;
     background: linear-gradient(45deg, #6366f1, #8b5cf6);
@@ -115,20 +113,19 @@ button {
     transition: 0.3s;
 }
 
-/* BUTTON HOVER */
 button:hover {
     transform: scale(1.08);
     box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
 }
 
-/* RESULTS GRID */
+
 .results {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
 }
 
-/* CARD */
+
 .card {
     background: rgba(255, 255, 255, 0.05);
     padding: 20px;
@@ -140,13 +137,12 @@ button:hover {
     animation: fadeIn 0.6s forwards;
 }
 
-/* CARD HOVER */
 .card:hover {
     transform: translateY(-6px) scale(1.03);
     box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
 }
 
-/* ANIMATION */
+
 @keyframes fadeIn {
     to {
         opacity: 1;
