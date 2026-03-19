@@ -1,79 +1,150 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import pandas as pd
 import ast
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 app = Flask(__name__)
 
 
+
 def load_data():
-    try:
-        movies = pd.read_csv("tmdb_5000_movies.csv")
-        credits = pd.read_csv("tmdb_5000_credits.csv")
-    except:
-        movies = pd.read_csv("tmdb_5000_movies.csv", encoding="latin-1")
-        credits = pd.read_csv("tmdb_5000_credits.csv", encoding="latin-1")
+    movies = pd.read_csv("tmdb_5000_movies.csv",encoding="latin-1")
+    credits = pd.read_csv("tmdb_5000_credits.csv")
 
-    return movies.merge(credits, on="title")
+    df = movies.merge(credits, on="title")
 
-df = load_data()
+    df = df[[
+        "title",
+        "overview",
+        "genres",
+        "keywords",
+        "cast",
+        "crew",
+        "image_url"   
+    ]]
+
+    return df
 
 
 def extract_names(text):
     try:
-        return [i['name'] for i in ast.literal_eval(text)]
+        return [i["name"] for i in ast.literal_eval(text)]
     except:
         return []
+
 
 def extract_director(text):
     try:
-        return [i['name'] for i in ast.literal_eval(text) if i['job'] == 'Director']
+        return [i["name"] for i in ast.literal_eval(text) if i["job"] == "Director"]
     except:
         return []
 
-df["genres"] = df["genres"].apply(extract_names)
-df["cast"] = df["cast"].apply(lambda x: extract_names(x)[:5])
-df["crew"] = df["crew"].apply(extract_director)
+
+def clean_list(lst):
+    return [i.replace(" ", "") for i in lst]
 
 
-def recommend(genres, actors, directors, top_n=6):
+def preprocess(df):
+    df["overview"] = df["overview"].fillna("")
 
-    def score(row):
+    df["genres"] = df["genres"].apply(extract_names).apply(clean_list)
+    df["keywords"] = df["keywords"].apply(extract_names).apply(clean_list)
+    df["cast"] = df["cast"].apply(lambda x: extract_names(x)[:5]).apply(clean_list)
+    df["crew"] = df["crew"].apply(extract_director).apply(clean_list)
+
+    def create_tags(row):
         return (
-            len(set(genres) & set(row["genres"])) +
-            len(set(actors) & set(row["cast"])) +
-            len(set(directors) & set(row["crew"]))
+            " ".join(row["genres"]) + " " +
+            " ".join(row["keywords"]) + " " +
+            " ".join(row["cast"]) + " " +
+            " ".join(row["crew"]) + " " +
+            row["overview"]
         )
 
-    df["score"] = df.apply(score, axis=1)
+    df["tags"] = df.apply(create_tags, axis=1)
+    df["tags"] = df["tags"].apply(lambda x: x.lower())
 
-    results = df[df["score"] > 0].sort_values("score", ascending=False).head(top_n)
+    return df
 
-    return results[["title", "genres"]].to_dict(orient="records")
+
+df = preprocess(load_data())
+df = df.reset_index(drop=True)
+
+
+
+tfidf = TfidfVectorizer(max_features=5000, stop_words="english")
+tfidf_matrix = tfidf.fit_transform(df["tags"])
+
+similarity = cosine_similarity(tfidf_matrix)
+
+
+
+
+def recommend(movie_name, top_n=6):
+    movie_name = movie_name.lower()
+
+    matches = df[df["title"].str.lower() == movie_name]
+
+    if matches.empty:
+        return []
+
+    idx = matches.index[0]
+
+    sim_scores = list(enumerate(similarity[idx]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+
+    sim_scores = sim_scores[1:top_n + 1]
+    movie_indices = [i[0] for i in sim_scores]
+
+    movies = df.iloc[movie_indices][["title", "image_url"]]
+
+    results = []
+    for _, row in movies.iterrows():
+        results.append({
+            "title": row["title"],
+            "poster": row["image_url"] if pd.notna(row["image_url"]) else "/static/default.jpg"
+        })
+
+    return results
+
+
+
+
+@app.route("/autocomplete")
+def autocomplete():
+    query = request.args.get("q", "").lower()
+
+    if not query:
+        return jsonify({"suggestions": []})
+
+    results = df[df["title"].str.lower().str.contains(query)].head(6)
+
+    suggestions = []
+    for _, row in results.iterrows():
+        suggestions.append({
+            "title": row["title"],
+            "poster": row["image_url"] if pd.notna(row["image_url"]) else "/static/default.jpg"
+        })
+
+    return jsonify({"suggestions": suggestions})
+
+
 
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-
-    all_genres = sorted({g for row in df["genres"] for g in row})
-    all_actors = sorted({a for row in df["cast"] for a in row})
-    all_directors = sorted({d for row in df["crew"] for d in row})
-
     recommendations = []
 
     if request.method == "POST":
-        genres = request.form.getlist("genres")
-        actors = request.form.getlist("actors")
-        directors = request.form.getlist("directors")
+        movie = request.form.get("movie")
+        if movie:
+            recommendations = recommend(movie)
 
-        recommendations = recommend(genres, actors, directors)
+    return render_template("index.html", recommendations=recommendations)
 
-    return render_template(
-        "index.html",
-        genres=all_genres,
-        actors=all_actors,
-        directors=all_directors,
-        recommendations=recommendations
-    )
+
+
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(debug=True)

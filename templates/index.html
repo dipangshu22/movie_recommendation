@@ -2,71 +2,341 @@
 <html>
 <head>
     <title>Movie Recommender</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
 
-<div class="container">
+    <style>
+        * { box-sizing: border-box; }
 
-    <h1>🎬 Movie Recommender</h1>
-    <p class="subtitle">Pick your taste. Discover your next movie.</p>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: radial-gradient(circle at top, #1e293b, #020617);
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
 
-    <form method="POST" class="form">
-
-        <div class="filters">
+        h2 {
+            text-align: center;
+        }
 
       
-            <div class="select-group">
-                <label>Genres</label>
-                <div class="select-wrapper">
-                    <select name="genres" multiple>
-                        {% for g in genres %}
-                        <option value="{{g}}">{{g}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
+        .logo {
+            display: inline-block;
+            animation: floatSpin 4s ease-in-out infinite;
+        }
+
+        @keyframes floatSpin {
+            0%,100% { transform: translateY(0) rotate(0); }
+            25% { transform: translateY(-5px) rotate(-5deg); }
+            75% { transform: translateY(5px) rotate(5deg); }
+        }
 
        
-            <div class="select-group">
-                <label>Actors</label>
-                <div class="select-wrapper">
-                    <select name="actors" multiple>
-                        {% for a in actors %}
-                        <option value="{{a}}">{{a}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
+        .search-container {
+            position: relative;
+            text-align: center;
+            margin-top: 20px;
+        }
 
-          
-            <div class="select-group">
-                <label>Directors</label>
-                <div class="select-wrapper">
-                    <select name="directors" multiple>
-                        {% for d in directors %}
-                        <option value="{{d}}">{{d}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
+        input {
+            padding: 12px;
+            width: 280px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255,255,255,0.08);
+            color: white;
+        }
 
-        </div>
+        button {
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            color: white;
+            cursor: pointer;
+        }
 
-        <button type="submit">✨ Recommend Movies</button>
+        
+        #suggestions {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 280px;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            z-index: 1000;
+        }
 
+        .suggest-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        .suggest-item:hover {
+            background: rgba(255,255,255,0.08);
+            transform: scale(1.02);
+        }
+
+        .suggest-item img {
+            width: 40px;
+            height: 55px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .movie-card {
+            border-radius: 15px;
+            overflow: hidden;
+            transition: 0.4s;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-10px) scale(1.05);
+        }
+
+        .movie-card img {
+            width: 100%;
+            height: 260px;
+            object-fit: cover;
+            transition: 0.4s;
+        }
+
+        .movie-card:hover img {
+            transform: scale(1.1);
+        }
+
+        .title {
+            text-align: center;
+            padding: 10px;
+        }
+
+        .fallback {
+            height: 260px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1e293b;
+        }
+
+     
+        #loader {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #1e293b;
+            border-top: 4px solid #4f46e5;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: auto;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        
+        .footer {
+            margin-top: 50px;
+            padding: 20px;
+            background: rgba(30,41,59,0.6);
+            overflow: hidden;
+        }
+
+        .poster-strip {
+            display: flex;
+            gap: 10px;
+            animation: scroll 25s linear infinite;
+        }
+
+        .poster-strip img {
+            width: 100px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        @keyframes scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        /* ✨ DEVELOPER ANIMATION */
+        .developer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .dev-text {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .dev-name {
+            font-weight: 600;
+            background: linear-gradient(90deg, #00dbde, #fc00ff, #00dbde);
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: gradientMove 4s linear infinite,
+                       glowPulse 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        @keyframes glowPulse {
+            0% {
+                text-shadow: 0 0 5px rgba(252, 0, 255, 0.3),
+                             0 0 10px rgba(0, 219, 222, 0.3);
+            }
+            100% {
+                text-shadow: 0 0 15px rgba(252, 0, 255, 0.8),
+                             0 0 30px rgba(0, 219, 222, 0.7);
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<h2><span class="logo">🎬</span> Movie Recommender</h2>
+
+<div class="search-container">
+    <form method="POST" onsubmit="showLoader()">
+        <input type="text" id="movieInput" name="movie" placeholder="Search favourite movie...">
+        <button type="submit">Recommend</button>
     </form>
 
-    <div class="results">
-        {% for movie in recommendations %}
-        <div class="card">
-            <h3>{{movie.title}}</h3>
-            <p>{{ movie.genres | join(', ') }}</p>
-        </div>
-        {% endfor %}
-    </div>
-
+    <div id="suggestions"></div>
 </div>
+
+<div id="loader">
+    <div class="spinner"></div>
+</div>
+
+<div class="movie-grid">
+    {% for movie in recommendations %}
+        <div class="movie-card">
+            <img src="{{ movie.poster }}"
+                 onerror="replaceWithFallback(this, '{{ movie.title }}')">
+            <div class="title">{{ movie.title }}</div>
+        </div>
+    {% endfor %}
+</div>
+
+<footer class="footer">
+    <div class="poster-strip" id="posterStrip"></div>
+
+    <div class="developer">
+        <p class="dev-text">
+            Designed & Developed by <span class="dev-name">Dipangshu Borah</span>
+        </p>
+    </div>
+</footer>
+
+<script>
+
+function showLoader() {
+    document.getElementById("loader").style.display = "block";
+}
+
+const input = document.getElementById("movieInput");
+const suggestionBox = document.getElementById("suggestions");
+
+input.addEventListener("input", async () => {
+    const query = input.value;
+
+    if (query.length < 2) {
+        suggestionBox.innerHTML = "";
+        return;
+    }
+
+    try {
+        const res = await fetch(`/autocomplete?q=${query}`);
+        const data = await res.json();
+
+        suggestionBox.innerHTML = "";
+
+        data.suggestions.forEach(movie => {
+            const div = document.createElement("div");
+            div.classList.add("suggest-item");
+
+            div.innerHTML = `
+                <img src="${movie.poster}">
+                <span>${movie.title}</span>
+            `;
+
+            div.onclick = () => {
+                input.value = movie.title;
+                suggestionBox.innerHTML = "";
+            };
+
+            suggestionBox.appendChild(div);
+        });
+
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+
+document.addEventListener("click", (e) => {
+    if (!e.target.closest(".search-container")) {
+        suggestionBox.innerHTML = "";
+    }
+});
+
+// Fallback
+function replaceWithFallback(img, title) {
+    const div = document.createElement("div");
+    div.className = "fallback";
+    div.innerText = title;
+    img.parentNode.replaceChild(div, img);
+}
+
+// Footer posters
+async function loadPosters() {
+    const res = await fetch("/autocomplete?q=a");
+    const data = await res.json();
+
+    const strip = document.getElementById("posterStrip");
+
+    data.suggestions.forEach(movie => {
+        const img = document.createElement("img");
+        img.src = movie.poster;
+        strip.appendChild(img);
+    });
+
+    strip.innerHTML += strip.innerHTML;
+}
+
+loadPosters();
+
+</script>
 
 </body>
 </html>
